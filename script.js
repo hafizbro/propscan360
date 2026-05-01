@@ -164,9 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const phone = document.getElementById('phone').value;
             const location = document.getElementById('location').value;
             const packageSelect = document.getElementById('packageSelect');
+            const spaceSelect = document.getElementById('formSpaceSelect');
             const hostingSelect = document.getElementById('formHostingSelect');
             
             const pkg = packageSelect.options[packageSelect.selectedIndex].text;
+            const space = spaceSelect.options[spaceSelect.selectedIndex].text;
             const hosting = hostingSelect.options[hostingSelect.selectedIndex].text;
 
             // Construct WhatsApp Message
@@ -176,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             message += `*Phone:* ${phone}\n`;
             message += `*Location:* ${location}\n`;
             message += `*Package:* ${pkg}\n`;
+            message += `*Property Size:* ${space}\n`;
             message += `*Hosting:* ${hosting}\n\n`;
             message += `Please contact me to confirm the shoot!`;
             
@@ -210,29 +213,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Dynamic Hosting Decoupling UX ---
     window.updateDynamicPricing = function(packageType, basePrice) {
-        const selectEl = document.getElementById(packageType + '-hosting');
+        const hostingSelect = document.getElementById(packageType + '-hosting');
+        const spaceSelect = document.getElementById(packageType + '-space');
         const priceEl = document.getElementById(packageType + '-price');
         const monthlyTag = document.getElementById(packageType + '-monthly');
         
-        if (!selectEl || !priceEl || !monthlyTag) return;
+        if (!priceEl || !monthlyTag) return;
         
-        const val = selectEl.value;
+        let currentTotal = basePrice;
         
-        if (val === 'subscription') {
-            priceEl.innerText = basePrice.toLocaleString();
-            monthlyTag.style.display = 'block';
-        } else {
-            const extra = parseInt(val) || 0;
-            const newTotal = basePrice + extra;
-            priceEl.innerText = newTotal.toLocaleString();
-            monthlyTag.style.display = 'none';
+        if (spaceSelect) {
+            currentTotal += parseInt(spaceSelect.value) || 0;
         }
+        
+        if (hostingSelect) {
+            const val = hostingSelect.value;
+            if (val === 'subscription') {
+                monthlyTag.style.display = 'block';
+            } else {
+                currentTotal += parseInt(val) || 0;
+                monthlyTag.style.display = 'none';
+            }
+        }
+
+        priceEl.innerText = currentTotal.toLocaleString();
     };
 
     // Global function to handle "Book" button clicks on cards
     window.selectPackage = function(pkgName) {
         const packageSelect = document.getElementById('packageSelect');
         const formHostingSelect = document.getElementById('formHostingSelect');
+        const formSpaceSelect = document.getElementById('formSpaceSelect');
         
         if (packageSelect) {
             packageSelect.value = pkgName;
@@ -242,14 +253,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
         }
         
-        // Sync the hosting selection if applicable
+        // Sync the selections if applicable
         if (pkgName === 'standard' || pkgName === 'premium') {
-            const cardSelect = document.getElementById(pkgName + '-hosting');
-            if (cardSelect && formHostingSelect) {
-                formHostingSelect.value = cardSelect.value;
+            const cardHostingSelect = document.getElementById(pkgName + '-hosting');
+            if (cardHostingSelect && formHostingSelect) {
+                formHostingSelect.value = cardHostingSelect.value;
                 formHostingSelect.style.borderBottomColor = 'var(--clr-accent-cyan)';
                 setTimeout(() => {
                     formHostingSelect.style.borderBottomColor = '';
+                }, 1000);
+            }
+            
+            const cardSpaceSelect = document.getElementById(pkgName + '-space');
+            if (cardSpaceSelect && formSpaceSelect) {
+                formSpaceSelect.value = cardSpaceSelect.value;
+                formSpaceSelect.style.borderBottomColor = 'var(--clr-accent-cyan)';
+                setTimeout(() => {
+                    formSpaceSelect.style.borderBottomColor = '';
                 }, 1000);
             }
         }

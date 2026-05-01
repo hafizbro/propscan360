@@ -181,7 +181,7 @@
                 <div class="pricing-card interactive-card reveal fade-left delay-1" id="card-standard">
                     <div class="pricing-header">
                         <h3 class="package-name">Standard</h3>
-                        <p class="package-desc">Up to 1500 sqft</p>
+                        <p class="package-desc">Basic Features</p>
                     </div>
                     <div class="pricing-price">
                         <span class="currency">৳</span><span class="amount" id="standard-price">3,999</span>
@@ -192,6 +192,15 @@
                         <li><i class="ph-bold ph-check-circle"></i> Basic Interactive Hotspots</li>
                         <li><i class="ph-bold ph-check-circle"></i> 24-Hour Delivery</li>
                     </ul>
+                    
+                    <div class="hosting-selector-wrapper" style="margin-bottom: 0.5rem;">
+                        <label class="hosting-label">Property Size:</label>
+                        <select class="hosting-select" id="standard-space" onchange="updateDynamicPricing('standard', 3999)">
+                            <option value="0">Up to 1500 sqft</option>
+                            <option value="2000">1501 - 2500 sqft (+৳2,000)</option>
+                            <option value="4000">2501 - 4000 sqft (+৳4,000)</option>
+                        </select>
+                    </div>
                     
                     <div class="hosting-selector-wrapper">
                         <label class="hosting-label">Hosting Duration:</label>
@@ -211,10 +220,10 @@
                     <div class="popular-badge">Most Popular</div>
                     <div class="pricing-header">
                         <h3 class="package-name">Premium</h3>
-                        <p class="package-desc">1500 - 2500 sqft</p>
+                        <p class="package-desc">Advanced Features</p>
                     </div>
                     <div class="pricing-price">
-                        <span class="currency">৳</span><span class="amount" id="premium-price">6,999</span>
+                        <span class="currency">৳</span><span class="amount" id="premium-price">5,999</span>
                         <div class="monthly-tag" id="premium-monthly" style="display:none;">+ ৳200/mo</div>
                     </div>
                     <ul class="pricing-features">
@@ -223,9 +232,18 @@
                         <li><i class="ph-bold ph-check-circle"></i> Custom Branding & Logo</li>
                     </ul>
                     
+                    <div class="hosting-selector-wrapper" style="margin-bottom: 0.5rem;">
+                        <label class="hosting-label">Property Size:</label>
+                        <select class="hosting-select" id="premium-space" onchange="updateDynamicPricing('premium', 5999)">
+                            <option value="0">Up to 1500 sqft</option>
+                            <option value="2000">1501 - 2500 sqft (+৳2,000)</option>
+                            <option value="4000">2501 - 4000 sqft (+৳4,000)</option>
+                        </select>
+                    </div>
+
                     <div class="hosting-selector-wrapper">
                         <label class="hosting-label">Hosting Duration:</label>
-                        <select class="hosting-select" id="premium-hosting" onchange="updateDynamicPricing('premium', 6999)">
+                        <select class="hosting-select" id="premium-hosting" onchange="updateDynamicPricing('premium', 5999)">
                             <option value="0">1 Month (Included free)</option>
                             <option value="500">3 Months (+৳500)</option>
                             <option value="1500">1 Year (+৳1,500)</option>
@@ -315,11 +333,23 @@
                         <div class="form-floating select-wrapper">
                             <select id="packageSelect" class="form-control" required>
                                 <option value="" disabled selected></option>
-                                <option value="standard">Standard (Up to 1500 sqft)</option>
-                                <option value="premium">Premium (1500-2500 sqft)</option>
+                                <option value="standard">Standard (Basic Features)</option>
+                                <option value="premium">Premium (Advanced Features)</option>
                                 <option value="commercial">Commercial - Custom Quote</option>
                             </select>
                             <label for="packageSelect" class="select-label">Select Package</label>
+                            <div class="input-line"></div>
+                        </div>
+
+                        <div class="form-floating select-wrapper">
+                            <select id="formSpaceSelect" class="form-control" required>
+                                <option value="" disabled selected></option>
+                                <option value="0">Up to 1500 sqft</option>
+                                <option value="2000">1501 - 2500 sqft</option>
+                                <option value="4000">2501 - 4000 sqft</option>
+                                <option value="custom">Larger (Custom Quote)</option>
+                            </select>
+                            <label for="formSpaceSelect" class="select-label">Property Size</label>
                             <div class="input-line"></div>
                         </div>
 
