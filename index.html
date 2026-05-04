@@ -554,6 +554,15 @@
         <span id="toastMessage">Message here</span>
     </div>
 
+    <!-- ===== URL LOADING OVERLAY ===== -->
+    <div class="url-loader" id="urlLoader">
+        <div class="url-loader-card">
+            <div class="url-loader-ring"></div>
+            <p class="url-loader-text">Loading Your Virtual Experience...</p>
+            <span class="url-loader-sub">Fetching your private tour from the cloud</span>
+        </div>
+    </div>
+
     <!-- Firebase SDK (v9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -632,18 +641,24 @@
     // --- Enter key support ---
     cpCodeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleCodeSubmit(); });
 
-    // --- Submit Logic ---
+    // --- Submit Logic (modal) ---
     cpSubmitBtn.addEventListener('click', handleCodeSubmit);
 
     async function handleCodeSubmit() {
         const code = cpCodeInput.value.trim().toUpperCase();
         if (!code) { showToast('Please enter your project code.', 'error'); return; }
-
-        // Loading state
         cpBtnText.textContent = 'Verifying...';
         cpSubmitBtn.disabled  = true;
         cpSubmitBtn.querySelector('i').className = 'ph-bold ph-spinner ph-spin';
+        const ok = await fetchAndLaunch(code, 'modal');
+        if (!ok) resetSubmitBtn();
+    }
 
+    // ============================================================
+    // CORE: Fetch project from Firestore and launch viewer
+    // mode: 'modal' | 'url'
+    // ============================================================
+    async function fetchAndLaunch(code, mode = 'modal') {
         try {
             const snapshot = await db.collection('projects')
                 .where('projectCode', '==', code)
@@ -651,27 +666,38 @@
                 .get();
 
             if (snapshot.empty) {
-                showToast('Invalid code. Please check and try again.', 'error');
-                resetSubmitBtn();
-                return;
+                if (mode === 'url') {
+                    hideUrlLoader();
+                    showToast('Invalid project link. The code was not found.', 'error');
+                } else {
+                    showToast('Invalid code. Please check and try again.', 'error');
+                }
+                return false;
             }
 
             const project = snapshot.docs[0].data();
 
             if (project.status !== 'Public') {
-                showToast('Your tour is not yet public. Please contact PropScan 360.', 'error');
-                resetSubmitBtn();
-                return;
+                if (mode === 'url') {
+                    hideUrlLoader();
+                    showToast('This tour is not yet public. Please contact PropScan 360.', 'error');
+                } else {
+                    showToast('Your tour is not yet public. Please contact PropScan 360.', 'error');
+                }
+                return false;
             }
 
-            // SUCCESS — launch viewer
-            closePortal();
+            // SUCCESS
+            if (mode === 'modal') closePortal();
+            if (mode === 'url')   hideUrlLoader();
             launchTourViewer(project);
+            return true;
 
         } catch (err) {
             console.error('Firestore error:', err);
+            if (mode === 'url') hideUrlLoader();
             showToast('A network error occurred. Please try again.', 'error');
-            resetSubmitBtn();
+            return false;
         }
     }
 
@@ -686,9 +712,42 @@
     tvExitBtn.addEventListener('click', exitTourViewer);
     function exitTourViewer() {
         tourViewer.classList.remove('active');
-        tourIframe.src = ''; // Stop video/audio
+        tourIframe.src = '';
+        document.body.style.overflow = '';
+        // Clean up URL param so refresh doesn’t re-trigger
+        const clean = window.location.pathname + window.location.hash;
+        history.replaceState(null, '', clean);
+    }
+
+    // ============================================================
+    // URL PARAMETER AUTO-LOAD
+    // e.g. yoursite.com/?project=KARIM-VILLA-01
+    // ============================================================
+    const urlLoader    = document.getElementById('urlLoader');
+
+    function showUrlLoader() {
+        urlLoader.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function hideUrlLoader() {
+        urlLoader.classList.remove('active');
         document.body.style.overflow = '';
     }
+
+    // Run on page load
+    (async function checkUrlParam() {
+        const params  = new URLSearchParams(window.location.search);
+        const code    = params.get('project');
+        if (!code) return; // Normal landing page
+
+        // Hide landing page content and show full-screen loader
+        showUrlLoader();
+
+        // Small delay so loader renders before Firebase call
+        await new Promise(r => setTimeout(r, 400));
+
+        await fetchAndLaunch(code.trim().toUpperCase(), 'url');
+    })();
     </script>
 </body>
 </html>

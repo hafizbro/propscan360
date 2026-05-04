@@ -1958,4 +1958,68 @@ section {
     .toast { left: 1rem; right: 1rem; bottom: 1rem; }
 }
 
+/* ============================================================
+   URL PARAMETER LOADING OVERLAY
+   ============================================================ */
+.url-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--clr-bg-primary);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s ease;
+}
+.url-loader.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.url-loader-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+}
+.url-loader-ring {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 229, 255, 0.12);
+    border-top-color: var(--clr-accent-cyan);
+    animation: spin-ring 0.9s linear infinite;
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.25);
+    position: relative;
+}
+.url-loader-ring::after {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    background: rgba(0, 229, 255, 0.15);
+    animation: pulse-dot 0.9s ease-in-out infinite alternate;
+}
+@keyframes spin-ring { to { transform: rotate(360deg); } }
+@keyframes pulse-dot {
+    from { transform: scale(0.8); opacity: .4; }
+    to   { transform: scale(1.2); opacity: 1; }
+}
+.url-loader-text {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--clr-text-main);
+    letter-spacing: -.3px;
+}
+.url-loader-sub {
+    font-size: .85rem;
+    color: var(--clr-text-muted);
+    display: block;
+    margin-top: -.75rem;
+}
+
+
 

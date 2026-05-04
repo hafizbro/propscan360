@@ -139,6 +139,8 @@
             font-family:var(--font-b); font-weight:600; cursor:pointer; display:flex;
             align-items:center; gap:.3rem; transition:all .2s;
         }
+        .tbl-btn-copy   { background:rgba(46,213,115,0.08); color:#2ed573; border:1px solid rgba(46,213,115,0.25); }
+        .tbl-btn-copy:hover   { background:rgba(46,213,115,0.18); }
         .tbl-btn-edit   { background:rgba(0,229,255,0.1); color:var(--cyan); border:1px solid rgba(0,229,255,0.2); }
         .tbl-btn-edit:hover   { background:rgba(0,229,255,0.2); }
         .tbl-btn-delete { background:rgba(255,71,87,0.1); color:var(--danger); border:1px solid rgba(255,71,87,0.2); }
@@ -298,6 +300,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
+// ============================================================
+// YOUR DEPLOYED SITE URL — update this before going live
+// ============================================================
+const SITE_BASE_URL = window.location.origin; // Auto-detects current domain
+
 // --- Toast ---
 let toastTimer;
 function showToast(msg, type='success') {
@@ -378,6 +385,7 @@ function renderTable(docs) {
             <td><code style="background:rgba(0,229,255,0.08);padding:.2rem .5rem;border-radius:5px;font-size:.8rem;color:var(--cyan);">${escHtml(d.projectCode)}</code></td>
             <td><span class="badge ${isPublic ? 'badge-public' : 'badge-private'}">${isPublic ? 'Public' : 'Private'}</span></td>
             <td><div class="td-actions">
+                <button class="tbl-btn tbl-btn-copy" onclick="copyDirectLink('${escHtml(d.projectCode)}')"><i class="ph-bold ph-link"></i> Copy Link</button>
                 <button class="tbl-btn tbl-btn-edit" onclick="editProject('${doc.id}')"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
                 <button class="tbl-btn tbl-btn-toggle" onclick="toggleStatus('${doc.id}','${d.status}')"><i class="ph-bold ph-eye${isPublic ? '-slash' : ''}"></i> ${isPublic ? 'Hide' : 'Publish'}</button>
                 <button class="tbl-btn tbl-btn-delete" onclick="deleteProject('${doc.id}')"><i class="ph-bold ph-trash"></i> Delete</button>
@@ -387,6 +395,25 @@ function renderTable(docs) {
 }
 
 function escHtml(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// --- Copy Direct Link ---
+window.copyDirectLink = async function(code) {
+    const url = `${SITE_BASE_URL}/?project=${encodeURIComponent(code)}`;
+    try {
+        await navigator.clipboard.writeText(url);
+        showToast(`Link copied! \n${url}`, 'success');
+    } catch(e) {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Link copied to clipboard!', 'success');
+    }
+};
 
 // --- Save / Update ---
 document.getElementById('saveProjectBtn').addEventListener('click', async () => {
