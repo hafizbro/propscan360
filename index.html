@@ -43,6 +43,9 @@
             </nav>
             <div class="nav-actions">
                 <a href="#contact" class="btn btn-outline">Location</a>
+                <button id="clientAccessBtn" class="btn btn-client-access">
+                    <i class="ph-bold ph-key"></i> Client Access
+                </button>
                 <a href="#lead-gen" class="btn btn-primary">Book a Shoot</a>
                 <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Menu">
                     <div class="hamburger">
@@ -61,6 +64,7 @@
                 <li><a href="#services" class="mobile-link">Services</a></li>
                 <li><a href="#portfolio" class="mobile-link">Portfolio</a></li>
                 <li><a href="#contact" class="mobile-link">Location</a></li>
+                <li><button id="clientAccessBtnMobile" class="btn btn-client-access btn-full mobile-link" style="border:none;cursor:pointer;"><i class="ph-bold ph-key"></i> Client Access</button></li>
                 <li><a href="#lead-gen" class="btn btn-primary btn-full mobile-link">Book a Shoot</a></li>
             </ul>
         </div>
@@ -112,6 +116,64 @@
             </div>
         </div>
     </section>
+
+    <!-- ===== WHO IS THIS FOR? SECTION ===== -->
+    <section class="who-for-section" id="who-for">
+        <div class="container">
+
+            <!-- Typewriter Heading -->
+            <div class="section-header reveal fade-up">
+                <h2 class="who-for-heading">
+                    <div class="who-for-heading-inner">
+                        Are you a&nbsp;<span id="typewriter-text" class="typewriter-word"></span><span class="typewriter-cursor">|</span>
+                    </div>
+                </h2>
+                <p class="who-for-sub">...then PropScan 360 is the digital growth partner you need to skyrocket your conversions.</p>
+            </div>
+
+            <!-- Industry Cards Grid -->
+            <div class="who-for-grid">
+
+                <!-- Card 1: Real Estate -->
+                <div class="who-card interactive-card reveal fade-up delay-1">
+                    <div class="who-card-icon">
+                        <i class="ph-duotone ph-buildings"></i>
+                    </div>
+                    <h3>Real Estate &amp; Architecture</h3>
+                    <p>Showcase luxury projects to NRB and international buyers in real-time before handover.</p>
+                </div>
+
+                <!-- Card 2: Industrial -->
+                <div class="who-card interactive-card reveal fade-up delay-2">
+                    <div class="who-card-icon">
+                        <i class="ph-duotone ph-factory"></i>
+                    </div>
+                    <h3>Industrial &amp; Manufacturing</h3>
+                    <p>Give foreign buyers a 360° compliance &amp; production line tour without flying them in.</p>
+                </div>
+
+                <!-- Card 3: Hospitality -->
+                <div class="who-card interactive-card reveal fade-up delay-3">
+                    <div class="who-card-icon">
+                        <i class="ph-duotone ph-sun-horizon"></i>
+                    </div>
+                    <h3>Hospitality &amp; Resorts</h3>
+                    <p>Let guests experience your premium suites and amenities virtually to boost direct bookings.</p>
+                </div>
+
+                <!-- Card 4: Commercial -->
+                <div class="who-card interactive-card reveal fade-up delay-4">
+                    <div class="who-card-icon">
+                        <i class="ph-duotone ph-office-chair"></i>
+                    </div>
+                    <h3>Commercial &amp; Workspaces</h3>
+                    <p>Sell your office culture and premium desks to startups and MNCs instantly.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <!-- ===== END WHO IS THIS FOR? ===== -->
 
     <!-- Infinite Marquee -->
     <div class="marquee-container reveal fade-up">
@@ -455,6 +517,178 @@
         </div>
     </footer>
 
+    <!-- ===== CLIENT PORTAL MODAL ===== -->
+    <div class="cp-overlay" id="cpOverlay" role="dialog" aria-modal="true" aria-labelledby="cpModalTitle">
+        <div class="cp-modal">
+            <button class="cp-close" id="cpClose" aria-label="Close">&times;</button>
+            <div class="cp-icon"><i class="ph-duotone ph-lock-key"></i></div>
+            <h2 id="cpModalTitle">Client Access Portal</h2>
+            <p class="cp-subtitle">Enter your private project code to view your 360° virtual tour.</p>
+            <div class="cp-input-wrapper">
+                <i class="ph-bold ph-hash cp-input-icon"></i>
+                <input type="text" id="cpCodeInput" class="cp-input" placeholder="e.g. PRJCT-001" autocomplete="off" spellcheck="false">
+            </div>
+            <button id="cpSubmitBtn" class="btn btn-primary btn-full btn-glow cp-submit">
+                <span class="cp-btn-text">Access My Tour</span>
+                <i class="ph-bold ph-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== FULL-SCREEN TOUR VIEWER ===== -->
+    <div class="tour-viewer" id="tourViewer">
+        <div class="tv-header">
+            <div class="tv-logo">
+                <img src="logo.png" alt="PropScan 360" style="height:30px;border-radius:50%;">
+                <span>PropScan <strong>360</strong></span>
+            </div>
+            <div class="tv-project-name" id="tvProjectName">Loading...</div>
+            <button class="tv-exit" id="tvExitBtn"><i class="ph-bold ph-x"></i> Exit Tour</button>
+        </div>
+        <iframe id="tourIframe" src="" frameborder="0" allowfullscreen allow="xr-spatial-tracking; gyroscope; accelerometer"></iframe>
+    </div>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div class="toast" id="toastNotif" role="alert">
+        <i class="ph-bold toast-icon" id="toastIcon"></i>
+        <span id="toastMessage">Message here</span>
+    </div>
+
+    <!-- Firebase SDK (v9 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
     <script src="script.js"></script>
+
+    <!-- ===== FIREBASE CLIENT PORTAL LOGIC ===== -->
+    <script>
+    // ============================================================
+    // STEP 1: PASTE YOUR FIREBASE CONFIG OBJECT HERE
+    // Get this from: Firebase Console > Project Settings > Your Apps
+    // ============================================================
+    const firebaseConfig = {
+        apiKey:            "AIzaSyAbe0uOSfS5c2pZRMSaeD6bBStQNxRyIWs",
+        authDomain:        "propscan360-c4c38.firebaseapp.com",
+        projectId:         "propscan360-c4c38",
+        storageBucket:     "propscan360-c4c38.firebasestorage.app",
+        messagingSenderId: "279591272544",
+        appId:             "1:279591272544:web:fcd22bee22f57fc5f8c305"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- DOM References ---
+    const cpOverlay       = document.getElementById('cpOverlay');
+    const cpClose         = document.getElementById('cpClose');
+    const cpCodeInput     = document.getElementById('cpCodeInput');
+    const cpSubmitBtn     = document.getElementById('cpSubmitBtn');
+    const cpBtnText       = document.querySelector('.cp-btn-text');
+    const tourViewer      = document.getElementById('tourViewer');
+    const tourIframe      = document.getElementById('tourIframe');
+    const tvProjectName   = document.getElementById('tvProjectName');
+    const tvExitBtn       = document.getElementById('tvExitBtn');
+    const toastNotif      = document.getElementById('toastNotif');
+    const toastMsg        = document.getElementById('toastMessage');
+    const toastIcon       = document.getElementById('toastIcon');
+
+    // --- Toast Helper ---
+    let toastTimeout;
+    function showToast(message, type = 'error') {
+        clearTimeout(toastTimeout);
+        toastNotif.className = 'toast toast-' + type + ' show';
+        toastIcon.className  = type === 'success'
+            ? 'ph-bold ph-check-circle toast-icon'
+            : 'ph-bold ph-warning-circle toast-icon';
+        toastMsg.textContent = message;
+        toastTimeout = setTimeout(() => { toastNotif.classList.remove('show'); }, 4000);
+    }
+
+    // --- Open / Close Modal ---
+    function openPortal() {
+        cpOverlay.classList.add('active');
+        setTimeout(() => cpCodeInput.focus(), 300);
+    }
+    function closePortal() {
+        cpOverlay.classList.remove('active');
+        cpCodeInput.value = '';
+        resetSubmitBtn();
+    }
+
+    function resetSubmitBtn() {
+        cpBtnText.textContent = 'Access My Tour';
+        cpSubmitBtn.disabled  = false;
+        cpSubmitBtn.querySelector('i').className = 'ph-bold ph-arrow-right';
+    }
+
+    document.getElementById('clientAccessBtn').addEventListener('click', openPortal);
+    const mobileBtn = document.getElementById('clientAccessBtnMobile');
+    if (mobileBtn) mobileBtn.addEventListener('click', () => { closePortal(); openPortal(); });
+    cpClose.addEventListener('click', closePortal);
+    cpOverlay.addEventListener('click', (e) => { if (e.target === cpOverlay) closePortal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePortal(); });
+
+    // --- Enter key support ---
+    cpCodeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleCodeSubmit(); });
+
+    // --- Submit Logic ---
+    cpSubmitBtn.addEventListener('click', handleCodeSubmit);
+
+    async function handleCodeSubmit() {
+        const code = cpCodeInput.value.trim().toUpperCase();
+        if (!code) { showToast('Please enter your project code.', 'error'); return; }
+
+        // Loading state
+        cpBtnText.textContent = 'Verifying...';
+        cpSubmitBtn.disabled  = true;
+        cpSubmitBtn.querySelector('i').className = 'ph-bold ph-spinner ph-spin';
+
+        try {
+            const snapshot = await db.collection('projects')
+                .where('projectCode', '==', code)
+                .limit(1)
+                .get();
+
+            if (snapshot.empty) {
+                showToast('Invalid code. Please check and try again.', 'error');
+                resetSubmitBtn();
+                return;
+            }
+
+            const project = snapshot.docs[0].data();
+
+            if (project.status !== 'Public') {
+                showToast('Your tour is not yet public. Please contact PropScan 360.', 'error');
+                resetSubmitBtn();
+                return;
+            }
+
+            // SUCCESS — launch viewer
+            closePortal();
+            launchTourViewer(project);
+
+        } catch (err) {
+            console.error('Firestore error:', err);
+            showToast('A network error occurred. Please try again.', 'error');
+            resetSubmitBtn();
+        }
+    }
+
+    // --- Launch Full-Screen Viewer ---
+    function launchTourViewer(project) {
+        tvProjectName.textContent = project.clientName + ' — ' + project.projectCode;
+        tourIframe.src = project.iframeUrl;
+        document.body.style.overflow = 'hidden';
+        tourViewer.classList.add('active');
+    }
+
+    tvExitBtn.addEventListener('click', exitTourViewer);
+    function exitTourViewer() {
+        tourViewer.classList.remove('active');
+        tourIframe.src = ''; // Stop video/audio
+        document.body.style.overflow = '';
+    }
+    </script>
 </body>
 </html>

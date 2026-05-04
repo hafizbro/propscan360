@@ -275,3 +275,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 });
+
+// ============================================================
+// --- Typewriter Effect for "Who Is This For?" Section ---
+// ============================================================
+(function () {
+    const professions = [
+        'Luxury Real Estate Developer?',
+        'Factory & Plant MD?',
+        'Resort or Hotel GM?',
+        'Co-working Space Owner?',
+        'Hospitality Superhost?'
+    ];
+
+    const typeEl   = document.getElementById('typewriter-text');
+    const cursorEl = document.querySelector('.typewriter-cursor');
+
+    if (!typeEl) return; // guard if section is removed later
+
+    let profIdx   = 0;   // which profession we're currently on
+    let charIdx   = 0;   // how far into the string we've typed
+    let isDeleting = false;
+
+    const TYPE_SPEED   = 70;   // ms per character typed
+    const DELETE_SPEED = 35;   // ms per character deleted (faster)
+    const PAUSE_END    = 1800; // ms to pause at full word
+    const PAUSE_START  = 400;  // ms to pause at empty before next word
+
+    function tick() {
+        const currentWord = professions[profIdx];
+
+        if (!isDeleting) {
+            // --- Typing phase ---
+            charIdx++;
+            typeEl.textContent = currentWord.slice(0, charIdx);
+
+            if (charIdx === currentWord.length) {
+                // Word fully typed — pause then start deleting
+                isDeleting = true;
+                setTimeout(tick, PAUSE_END);
+                return;
+            }
+            setTimeout(tick, TYPE_SPEED);
+
+        } else {
+            // --- Deleting phase ---
+            charIdx--;
+            typeEl.textContent = currentWord.slice(0, charIdx);
+
+            if (charIdx === 0) {
+                // Word fully deleted — move to next profession
+                isDeleting = false;
+                profIdx = (profIdx + 1) % professions.length;
+                setTimeout(tick, PAUSE_START);
+                return;
+            }
+            setTimeout(tick, DELETE_SPEED);
+        }
+    }
+
+    // Kick off after a short initial delay so the page can settle
+    setTimeout(tick, 900);
+})();
